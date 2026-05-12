@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Məktub Generatoru — EZ Group / Bubago</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f0f2f5; color: #1a1a1a;
+    padding: 12px; padding-bottom: 100px; min-height: 100vh;
+  }
+  .app { max-width: 950px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 16px; }
+
+  /* TABS */
+  .tabs {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 6px; margin-bottom: 16px;
+    background: #fff; padding: 8px; border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .tab {
+    padding: 12px 6px; border: 2px solid transparent;
+    background: #f5f5f5; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-weight: 600; color: #555;
+    text-align: center; transition: all 0.15s; line-height: 1.3;
+  }
+  .tab:hover { background: #e8eef0; }
+  .tab.active {
+    background: linear-gradient(135deg, #2c5530, #3d7a42);
+    color: #fff; border-color: #2c5530;
+  }
+  .tab-emoji { display: block; font-size: 20px; margin-bottom: 3px; }
+  @media (max-width: 540px) {
+    .tab { font-size: 10px; padding: 8px 3px; }
+    .tab-emoji { font-size: 18px; }
+  }
+
+  /* CARDS */
+  .card {
+    background: #fff; border-radius: 12px;
+    padding: 16px; margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 13px; color: #2c5530;
+    margin-bottom: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .field { margin-bottom: 10px; }
+  .field label {
+    display: block; font-size: 12px; color: #555;
+    margin-bottom: 4px; font-weight: 600;
+  }
+  input[type="text"], input[type="date"], input[type="number"], select, textarea {
+    width: 100%; padding: 11px 12px;
+    border: 1px solid #d0d4d9; border-radius: 8px;
+    font-size: 16px; font-family: inherit;
+    background: #fafbfc; transition: all 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #2c5530; background: #fff;
+  }
+  select { cursor: pointer; }
+  .row-2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  @media (max-width: 480px) {
+    .row-2 { grid-template-columns: 1fr; }
+  }
+
+  .form-section { display: none; }
+  .form-section.active { display: block; }
+
+  /* CARS LIST */
+  .car-item {
+    background: #f7f9f7; border: 1px solid #e0e6e0;
+    border-radius: 10px; padding: 12px; margin-bottom: 8px;
+  }
+  .car-item-head {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 8px;
+  }
+  .car-item-num {
+    font-size: 12px; color: #2c5530; font-weight: 700;
+  }
+  .btn-remove {
+    background: #fee; color: #c33; border: 1px solid #fcc;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 11px; cursor: pointer; font-weight: 600;
+  }
+  .btn-add {
+    width: 100%; background: #fff; color: #2c5530;
+    border: 2px dashed #2c5530; padding: 11px;
+    border-radius: 8px; font-size: 13px; cursor: pointer;
+    font-weight: 600; margin-top: 4px;
+  }
+  .btn-add:hover { background: #f0f7f0; }
+
+  /* ACTIONS */
+  .actions {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; padding: 12px 16px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    display: flex; gap: 8px; z-index: 100;
+  }
+  .btn-primary {
+    flex: 1;
+    background: linear-gradient(135deg, #2c5530, #3d7a42);
+    color: #fff; border: none; padding: 13px;
+    border-radius: 10px; font-size: 15px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 2px 8px rgba(44,85,48,0.3);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    background: #fff; color: #555;
+    border: 2px solid #d0d4d9; padding: 13px 16px;
+    border-radius: 10px; font-size: 14px;
+    font-weight: 600; cursor: pointer;
+  }
+
+  /* MODAL */
+  .modal {
+    display: none; position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6); z-index: 200; overflow-y: auto;
+  }
+  .modal.active { display: block; }
+  .modal-inner {
+    max-width: 800px; margin: 16px auto;
+    background: #fff; border-radius: 12px; overflow: hidden;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: #2c5530; color: #fff;
+  }
+  .modal-header h3 { font-size: 15px; }
+  .modal-close {
+    background: rgba(255,255,255,0.2); color: #fff; border: none;
+    width: 30px; height: 30px; border-radius: 50%;
+    cursor: pointer; font-size: 18px;
+  }
+  .modal-actions {
+    display: flex; gap: 6px; padding: 10px 16px;
+    background: #f8f9fa; border-bottom: 1px solid #e0e0e0; flex-wrap: wrap;
+  }
+  .modal-actions button {
+    flex: 1; min-width: 100px; padding: 10px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid #2c5530;
+    background: #fff; color: #2c5530;
+  }
+  .modal-actions button.primary { background: #2c5530; color: #fff; }
+
+  /* LETTER STYLE (printed) */
+  .letter {
+    padding: 35px 50px; background: #fff;
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 11.5pt; line-height: 1.55; color: #000;
+    min-height: 1000px;
+  }
+  .header-ez {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 35px;
+    gap: 18px; flex-wrap: wrap;
+  }
+  .logo-europcar {
+    flex-shrink: 0;
+    max-width: 180px;
+    height: auto;
+  }
+  .logo-europcar img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .header-ez-info {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; font-size: 9.5pt;
+    font-family: Arial, sans-serif; line-height: 1.4; min-width: 250px;
+  }
+  .header-bubago { margin-bottom: 35px; font-family: Arial, sans-serif; }
+  .header-bubago-line { font-size: 11pt; font-weight: bold; }
+  .header-bubago-info { font-size: 10pt; font-weight: bold; margin-top: 6px; }
+
+  .letter-meta {
+    display: flex; justify-content: space-between;
+    margin-bottom: 22px; font-style: italic; font-size: 11pt;
+  }
+  .recipient {
+    width: 55%; margin-left: auto; margin-bottom: 24px;
+    font-size: 11pt; text-align: justify;
+  }
+  .letter-num {
+    text-align: center; margin-bottom: 22px; font-size: 11pt;
+  }
+  .body-text {
+    text-align: justify; margin-bottom: 18px; text-indent: 30px;
+  }
+  .driver-block {
+    margin: 28px 0 0 30px; font-size: 11.5pt;
+  }
+  .driver-block b { font-weight: bold; }
+
+  .cars-table {
+    width: 100%; border-collapse: collapse;
+    margin: 16px 0 24px; font-size: 10.5pt;
+  }
+  .cars-table th, .cars-table td {
+    border: 1px solid #000; padding: 7px 9px;
+    text-align: left; vertical-align: top;
+  }
+  .cars-table th { background: #f0f0f0; font-weight: bold; text-align: center; }
+  .cars-table td.center { text-align: center; }
+
+  .signature {
+    display: flex; justify-content: space-between;
+    margin-top: 70px; font-size: 11pt;
+    flex-wrap: wrap; gap: 20px;
+  }
+
+  .etibar-title {
+    text-align: center; margin-bottom: 4px;
+    font-weight: bold; font-size: 12pt;
+  }
+  .etibar-org {
+    text-align: center; margin-bottom: 22px; font-size: 11pt;
+  }
+  .etibar-table {
+    width: 100%; border-collapse: collapse; margin-bottom: 18px;
+  }
+  .etibar-table th, .etibar-table td {
+    border: 1px solid #000; padding: 12px;
+    text-align: center; font-size: 11pt;
+  }
+  .etibar-table th { font-weight: bold; background: #fafafa; }
+  .etibar-text {
+    margin: 26px 0 28px; font-size: 11pt; text-align: justify;
+  }
+  .etibar-dates {
+    display: flex; justify-content: space-between;
+    margin-bottom: 50px; font-size: 11pt;
+  }
+
+  /* INSTRUCTIONS */
+  .instructions { font-size: 14px; line-height: 1.7; }
+  .instructions h3 {
+    color: #2c5530; margin: 16px 0 8px;
+    font-size: 16px; padding-bottom: 4px;
+    border-bottom: 2px solid #e8efe9;
+  }
+  .instructions h3:first-child { margin-top: 0; }
+  .instructions ol, .instructions ul {
+    margin-left: 22px; margin-bottom: 12px;
+  }
+  .instructions li { margin-bottom: 6px; }
+  .instructions code {
+    background: #f0f0f0; padding: 2px 6px;
+    border-radius: 4px; font-family: monospace; font-size: 13px;
+  }
+  .info-box {
+    background: #e8f4fd; border-left: 4px solid #2c5530;
+    padding: 12px 14px; border-radius: 6px;
+    margin: 10px 0; font-size: 13px;
+  }
+  .warn-box {
+    background: #fff8e1; border-left: 4px solid #f0b400;
+    padding: 12px 14px; border-radius: 6px;
+    margin: 10px 0; font-size: 13px;
+  }
+
+  /* PRINT */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .app, .actions, .modal-header, .modal-actions { display: none !important; }
+    .modal { position: static; background: #fff; display: block !important; }
+    .modal-inner { box-shadow: none; margin: 0; max-width: 100%; border-radius: 0; }
+    .letter { padding: 25mm 20mm; font-size: 11pt; }
+    .page-break { page-break-before: always; }
+    @page { size: A4; margin: 0; }
+  }
+
+  .toast {
+    position: fixed; bottom: 100px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a; color: #fff;
+    padding: 10px 18px; border-radius: 24px;
+    font-size: 13px; opacity: 0; transition: opacity 0.3s;
+    z-index: 300; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <h1>📋 Məktub Generatoru</h1>
+  <p class="subtitle">EZ Group MMC · Bubago MMC</p>
+
+  <div class="tabs">
+    <button class="tab active" data-type="single" onclick="switchTab('single')">
+      <span class="tab-emoji">📝</span>Tək<br>məktub
+    </button>
+    <button class="tab" data-type="list" onclick="switchTab('list')">
+      <span class="tab-emoji">📋</span>Siyahı<br>(silmək)
+    </button>
+    <button class="tab" data-type="etibar" onclick="switchTab('etibar')">
+      <span class="tab-emoji">📜</span>Yalnız<br>etibarnamə
+    </button>
+    <button class="tab" data-type="help" onclick="switchTab('help')">
+      <span class="tab-emoji">❓</span>Təlimat
+    </button>
+  </div>
+
+  <!-- Company selector (shared) -->
+  <div class="card" id="company-card">
+    <h2>🏢 Şirkət</h2>
+    <div class="field">
+      <select id="company" onchange="saveData()">
+        <option value="ez">EZ Group MMC (Europcar)</option>
+        <option value="bubago">Bubago MMC</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ============ FORM 1: SINGLE LETTER ============ -->
+  <div class="form-section active" id="form-single">
+    <div class="card">
+      <h2>📄 Məktub məlumatları</h2>
+      <div class="field">
+        <label>Məktub №</label>
+        <input type="text" id="s_num" placeholder="3168" oninput="saveData()">
+      </div>
+      <div class="field">
+        <label>Sorğu № <span style="font-weight:400;color:#888">(rəsmi cavabdırsa — daxili №)</span></label>
+        <input type="text" id="s_sorgu" placeholder="SX068669102AZ" oninput="saveData()">
+      </div>
+      <div class="field">
+        <label>Ünvanlanır (kimə)</label>
+        <select id="s_recipient" onchange="saveData()">
+          <option value="bas">Baş Dövlət Yol Polisi İdarəsi</option>
+          <option value="yasamal">Yasamal rayonu DYP</option>
+          <option value="xirdalan">Xırdalan (Abşeron rayonu) DYP</option>
+          <option value="nesimi">Nəsimi rayonu DYP</option>
+          <option value="sabail">Sabail rayonu DYP</option>
+          <option value="nerimanov">Nərimanov rayonu DYP</option>
+          <option value="xetai">Xətai rayonu DYP</option>
+          <option value="binegedi">Binəqədi rayonu DYP</option>
+          <option value="nizami">Nizami rayonu DYP</option>
+          <option value="suraxani">Suraxanı rayonu DYP</option>
+          <option value="xezer">Xəzər rayonu DYP</option>
+          <option value="qaradag">Qaradağ rayonu DYP</option>
+          <option value="custom">Başqa (öz yaz)</option>
+        </select>
+      </div>
+      <div class="field" id="s_custom_field" style="display:none">
+        <label>Öz adresat</label>
+        <input type="text" id="s_custom" placeholder="...rayonu DYP" oninput="saveData()">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🚗 Maşın və tarixlər</h2>
+      <div class="row-2">
+        <div class="field">
+          <label>Maşın markası</label>
+          <input type="text" id="s_brand" placeholder="Changan Alsvin" oninput="saveData()">
+        </div>
+        <div class="field">
+          <label>Dövlət nişanı</label>
+          <input type="text" id="s_plate" placeholder="90-YF-483" oninput="saveData()">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>İstifadə tarixi (с)</label>
+          <input type="date" id="s_from" oninput="saveData()">
+        </div>
+        <div class="field">
+          <label>İstifadə tarixi (по)</label>
+          <input type="date" id="s_to" oninput="saveData()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>👤 Sürücü</h2>
+      <div class="row-2">
+        <div class="field">
+          <label>Sürücü A.S.A.</label>
+          <input type="text" id="s_driver" placeholder="Əzizova Aysel" oninput="saveData()">
+        </div>
+        <div class="field">
+          <label>Sürücülük vəsiqəsi</label>
+          <input type="text" id="s_license" placeholder="AE 054 847" oninput="saveData()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📜 Etibarnamə (2-ci səhifə — avtomatik)</h2>
+      <div class="field">
+        <label>Etibarnamə №</label>
+        <input type="text" id="s_etibar_num" placeholder="10/25" oninput="saveData()">
+      </div>
+      <div style="font-size:12px;color:#888;padding:4px 0">
+        Etibarnamə tarixləri məktubdakı "istifadə tarixi (с — по)" ilə eyni olur — avtomatik.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FORM 2: LIST LETTER ============ -->
+  <div class="form-section" id="form-list">
+    <div class="card">
+      <h2>📄 Məktub məlumatları</h2>
+      <div class="field">
+        <label>Məktub №</label>
+        <input type="text" id="l_num" placeholder="547114" oninput="saveData()">
+      </div>
+      <div class="field">
+        <label>Sorğu № <span style="font-weight:400;color:#888">(rəsmi cavabdırsa)</span></label>
+        <input type="text" id="l_sorgu" placeholder="SX068669102AZ" oninput="saveData()">
+      </div>
+      <div class="field">
+        <label>Şəhər</label>
+        <input type="text" id="l_city" placeholder="Bakı" oninput="saveData()">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🚗 Maşınların siyahısı</h2>
+      <div id="carsList"></div>
+      <button class="btn-add" onclick="addCar()">+ Maşın əlavə et</button>
+    </div>
+  </div>
+
+  <!-- ============ FORM 3: ETİBARNAMƏ ONLY ============ -->
+  <div class="form-section" id="form-etibar">
+    <div class="card">
+      <h2>📜 Etibarnamə</h2>
+      <div class="field">
+        <label>Etibarnamə №</label>
+        <input type="text" id="e_num" placeholder="10/25" oninput="saveData()">
+      </div>
+      <div class="field">
+        <label>Sorğu № <span style="font-weight:400;color:#888">(rəsmi cavabdırsa)</span></label>
+        <input type="text" id="e_sorgu" placeholder="SX068669102AZ" oninput="saveData()">
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Verilmə tarixi (с)</label>
+          <input type="date" id="e_from" oninput="saveData()">
+        </div>
+        <div class="field">
+          <label>Etibarlıq tarixi (по)</label>
+          <input type="date" id="e_to" oninput="saveData()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🚗 Maşın</h2>
+      <div class="row-2">
+        <div class="field">
+          <label>Maşın markası</label>
+          <input type="text" id="e_brand" placeholder="Hyundai Creta" oninput="saveData()">
+        </div>
+        <div class="field">
+          <label>Dövlət nişanı</label>
+          <input type="text" id="e_plate" placeholder="90 PB 267" oninput="saveData()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>👤 Sürücü</h2>
+      <div class="row-2">
+        <div class="field">
+          <label>Sürücü</label>
+          <input type="text" id="e_driver" placeholder="HÜSEYNOV HƏSƏN" oninput="saveData()">
+        </div>
+        <div class="field">
+          <label>Sürücülük vəsiqəsi</label>
+          <input type="text" id="e_license" placeholder="AD 138101" oninput="saveData()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 4: HELP ============ -->
+  <div class="form-section" id="form-help">
+    <div class="card">
+      <div class="instructions">
+        <h3>📌 Nə üçündür?</h3>
+        <p>Bu səhifə Yol Polisi üçün məktubları və etibarnamələri 30 saniyəyə hazırlamaq üçündür. Heç bir Word-a ehtiyac yoxdur — formu doldurursan, çap edirsən, möhür və imza qoyursan.</p>
+
+        <div class="info-box">
+          <b>✨ Avtomatik doldurulur:</b><br>
+          • <b>Tarix</b> — həmişə bugünkü tarixdir<br>
+          • <b>Direktor</b> — şirkətə görə avtomatik (EZ Group → Yusifov Fərid, Bubago → Yaqubov Zaur)<br>
+          • <b>Səlahiyyətli şəxs (etibarnamədə)</b> — eyni cür avtomatik<br>
+          • <b>Etibarnamənin tarixləri</b> — məktubdakı "istifadə tarixləri (с — по)" ilə eyni<br>
+          • <b>Məktub №</b> — hər dəfə "Yarat" basanda 1 artır
+        </div>
+
+        <h3>📝 Tək məktub (ən çox istifadə olunan)</h3>
+        <p>Bir maşın + bir sürücü + tarix intervalı. <b>Etibarnamə avtomatik 2-ci səhifədə gəlir</b> (eyni sürücü/maşın üçün).</p>
+        <ol>
+          <li>"Tək məktub" seç</li>
+          <li>Şirkət seç: <b>EZ Group</b> və ya <b>Bubago</b></li>
+          <li>Ünvanı seç: <b>Baş Dövlət</b>, <b>Yasamal</b>, <b>Xırdalan</b> və s.</li>
+          <li>Məktub № yaz (birinci dəfə)</li>
+          <li>Maşın və sürücü məlumatları</li>
+          <li>İstifadə tarixləri (с — по)</li>
+          <li>Etibarnamə № və müddəti</li>
+          <li><b>"✨ Məktubu yarat"</b> basın</li>
+          <li>"🖨️ Çap / PDF" basın → printer → kağıza möhür və imza</li>
+          <li><b>Növbəti məktub üçün №-i yenidən yazmaq lazım deyil</b> — özü 1 artıb</li>
+        </ol>
+
+        <h3>📋 Siyahı məktubu (silmək üçün)</h3>
+        <p>Bir neçə maşın üçün — yazırıq ki, bu sürücülər artıq bu maşınları idarə etmir, sistemdən silin.</p>
+        <ol>
+          <li>"Siyahı (silmək)" seç</li>
+          <li>"+ Maşın əlavə et" düyməsi ilə neçə maşın lazımdır əlavə et</li>
+          <li>Hər maşın üçün: marka, dövlət nişanı, sürücü, vəsiqə</li>
+          <li>"Məktubu yarat" → çap</li>
+        </ol>
+
+        <h3>📜 Yalnız etibarnamə</h3>
+        <p>Əgər məktub yoxdur, sadəcə etibarnamə lazımdır — bu vərəq.</p>
+
+        <h3>💾 Məlumatlar saxlanılır</h3>
+        <div class="info-box">
+          Yazdığın bütün məlumatlar avtomatik bu kompüter (telefon) brauzerində saxlanılır. Səhifəni yenidən açanda hər şey öz yerində olacaq, <b>məktub № də öz yerində — sonuncu nömrədən sonrakı</b>. <b>Lakin başqa kompüterdə açsan — boş olacaq</b> (məlumatlar serverə getmir, bu təhlükəsizdir).
+        </div>
+
+        <h3>💾 PDF saxlamaq / Google Drive</h3>
+        <p><b>"Məktubu yarat"</b> basdıqdan sonra modal açılır. Orada 4 düymə var:</p>
+        <ol>
+          <li><b>💾 PDF saxla / Yeni səhifədə aç</b> — letter yeni pəncərədə açılır, yuxarıda yaşıl düymə var → bas → "Save as PDF" / "Save to Google Drive" seç.
+            <ul>
+              <li>📱 <b>Telefon:</b> bu yol ən rahatdır</li>
+              <li>💻 <b>Kompüter:</b> bu da işləyir</li>
+            </ul>
+          </li>
+          <li><b>🖨️ Çap / Google Drive</b> — birbaşa print pəncərəsi açılır (kompüterdə).
+            <ul>
+              <li>"Destination" → <b>"Save to Google Drive"</b> seç</li>
+              <li>ya da "Save as PDF" — PDF kompüterə</li>
+              <li>ya da adi printer seçərək kağıza çıxar</li>
+            </ul>
+          </li>
+          <li><b>📋 Mətni kopyala</b> — mətni clipboard-a kopyalayır (Word-a yapışdırmaq üçün)</li>
+          <li><b>Geri</b> — bağla, düzəliş et</li>
+        </ol>
+        <div class="info-box">
+          <b>📱 Telefondan PDF-ə necə saxlamaq:</b>
+          <ol style="margin-top: 6px">
+            <li>"💾 PDF saxla" düyməsinə bas</li>
+            <li>Yeni səhifədə üstdəki yaşıl düyməyə bas</li>
+            <li>Telefon "Share" və ya "Print" pəncərəsi açacaq</li>
+            <li>Seç: <b>"Save as PDF"</b>, <b>"Google Drive"</b>, və ya başqa</li>
+            <li>Tap → Hazırdır ✓</li>
+          </ol>
+        </div>
+
+        <h3>⚠️ Vacib qeydlər</h3>
+        <div class="warn-box">
+          <b>Boş qalan sahələr:</b> əgər nəyisə yazmamısansa, məktubda "<code>___</code>" görünəcək. Hamısını doldurmaq lazımdır.<br><br>
+          <b>Tarix formatı:</b> "istifadə tarixi (с-по)" sahəsində takvim açılır — onu istifadə et.<br><br>
+          <b>Səhv olarsa:</b> formu doldur, "Məktubu yarat" bas, mətni yoxla, lazım olsa "Geri" basıb düzəlt.
+        </div>
+
+        <h3>🆘 Texniki dəstək</h3>
+        <p>Səhifədə nəsə işləmirsə və ya yeni növ məktub əlavə etmək lazımdırsa — administratora müraciət edin.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions" id="actions">
+  <button class="btn-secondary" onclick="clearForm()" title="Təmizlə">↺</button>
+  <button class="btn-primary" onclick="generate()">✨ Məktubu yarat</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-inner">
+    <div class="modal-header">
+      <h3 id="modalTitle">Hazır məktub</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-actions">
+      <button class="primary" onclick="savePDF()">💾 PDF saxla / Yeni səhifədə aç</button>
+      <button onclick="window.print()">🖨️ Çap / Google Drive</button>
+      <button onclick="copyText()">📋 Mətni kopyala</button>
+      <button onclick="closeModal()">Geri</button>
+    </div>
+    <div id="letterContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════
+const AZ_MONTHS = ['yanvar','fevral','mart','aprel','may','iyun','iyul','avqust','sentyabr','oktyabr','noyabr','dekabr'];
+
+const EUROPCAR_LOGO = 'data:image/jpeg;base64,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';
+
+const COMPANIES = {
+  ez: {
+    name: 'EZ Group',
+    fullName: '"EZ GROUP" MMC',
+    voen: '1305073691',
+    address: 'Həzi Aslanov 103, Bakı, Azərbaycan',
+    phone: '+994125041174',
+    email: 'office@europcar.az',
+    logo: 'europcar',
+    director: 'Yusifov Fərid',
+    etibarPerson: 'Fərid Yusifov'
+  },
+  bubago: {
+    name: 'Bubago',
+    fullName: '"BUBAGO" MMC',
+    voen: '1309424041',
+    address: 'AZ1065, Bakı şəhəri, Yasamal rayonu, Şimalı Sovet Meydanı, ev.3, m.24',
+    phone: '+994 50 215 18 86',
+    email: '',
+    logo: 'text',
+    director: 'Yaqubov Zaur',
+    etibarPerson: 'Zaur Yaqubov'
+  }
+};
+
+const RECIPIENTS = {
+  bas: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Baş Dövlət Yol Polisi İdarəsinə',
+  yasamal: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Yasamal rayonu Dövlət Yol Polisi İdarəsinə',
+  xirdalan: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Abşeron rayonu Dövlət Yol Polisi İdarəsinə',
+  nesimi: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Nəsimi rayonu Dövlət Yol Polisi İdarəsinə',
+  sabail: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Sabail rayonu Dövlət Yol Polisi İdarəsinə',
+  nerimanov: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Nərimanov rayonu Dövlət Yol Polisi İdarəsinə',
+  xetai: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Xətai rayonu Dövlət Yol Polisi İdarəsinə',
+  binegedi: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Binəqədi rayonu Dövlət Yol Polisi İdarəsinə',
+  nizami: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Nizami rayonu Dövlət Yol Polisi İdarəsinə',
+  suraxani: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Suraxanı rayonu Dövlət Yol Polisi İdarəsinə',
+  xezer: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Xəzər rayonu Dövlət Yol Polisi İdarəsinə',
+  qaradag: 'Azərbaycan Respublikası Daxili İşlər Nazirliyinin Qaradağ rayonu Dövlət Yol Polisi İdarəsinə'
+};
+
+let currentType = 'single';
+let cars = [{ brand:'', plate:'', driver:'', license:'' }];
+const STORAGE_KEY = 'letter_gen_v2';
+
+// ════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════
+function switchTab(type) {
+  currentType = type;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.type === type));
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('form-' + type).classList.add('active');
+
+  // Hide company card and actions on help tab
+  const isHelp = (type === 'help');
+  document.getElementById('company-card').style.display = isHelp ? 'none' : 'block';
+  document.getElementById('actions').style.display = isHelp ? 'none' : 'flex';
+
+  localStorage.setItem(STORAGE_KEY + '_tab', type);
+}
+
+// ════════════════════════════════════════════
+// CARS LIST
+// ════════════════════════════════════════════
+function renderCars() {
+  const container = document.getElementById('carsList');
+  container.innerHTML = '';
+  cars.forEach((car, idx) => {
+    const div = document.createElement('div');
+    div.className = 'car-item';
+    div.innerHTML = `
+      <div class="car-item-head">
+        <span class="car-item-num">№ ${idx + 1}</span>
+        ${cars.length > 1 ? `<button class="btn-remove" onclick="removeCar(${idx})">Sil</button>` : ''}
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Marka</label>
+          <input type="text" value="${escapeAttr(car.brand)}" oninput="updateCar(${idx},'brand',this.value)" placeholder="FIAT DOBLO">
+        </div>
+        <div class="field">
+          <label>Dövlət nişanı</label>
+          <input type="text" value="${escapeAttr(car.plate)}" oninput="updateCar(${idx},'plate',this.value)" placeholder="77-JE-869">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Sürücü A.S.A.</label>
+          <input type="text" value="${escapeAttr(car.driver)}" oninput="updateCar(${idx},'driver',this.value)" placeholder="Ağayev Emin">
+        </div>
+        <div class="field">
+          <label>Sürücülük vəsiqəsi</label>
+          <input type="text" value="${escapeAttr(car.license)}" oninput="updateCar(${idx},'license',this.value)" placeholder="BA 141101">
+        </div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function addCar() {
+  cars.push({ brand:'', plate:'', driver:'', license:'' });
+  renderCars();
+  saveData();
+}
+
+function removeCar(idx) {
+  cars.splice(idx, 1);
+  renderCars();
+  saveData();
+}
+
+function updateCar(idx, field, value) {
+  cars[idx][field] = value;
+  saveData();
+}
+
+// ════════════════════════════════════════════
+// SAVE / LOAD
+// ════════════════════════════════════════════
+function saveData() {
+  // Custom recipient field visibility
+  const rec = document.getElementById('s_recipient');
+  if (rec) {
+    document.getElementById('s_custom_field').style.display = rec.value === 'custom' ? 'block' : 'none';
+  }
+
+  const ids = [
+    'company',
+    's_num','s_sorgu','s_recipient','s_custom','s_brand','s_plate','s_from','s_to',
+    's_driver','s_license','s_etibar_num',
+    'l_num','l_sorgu','l_city',
+    'e_num','e_sorgu','e_from','e_to','e_brand','e_plate','e_driver','e_license'
+  ];
+  const data = { _cars: cars };
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(id => {
+        if (id === '_cars') return;
+        const el = document.getElementById(id);
+        if (el && data[id]) el.value = data[id];
+      });
+      if (Array.isArray(data._cars) && data._cars.length > 0) cars = data._cars;
+    }
+  } catch(e) {}
+
+  const savedTab = localStorage.getItem(STORAGE_KEY + '_tab');
+  if (savedTab && document.querySelector('[data-type="'+savedTab+'"]')) switchTab(savedTab);
+
+  // Show/hide custom recipient
+  const rec = document.getElementById('s_recipient');
+  if (rec) document.getElementById('s_custom_field').style.display = rec.value === 'custom' ? 'block' : 'none';
+
+  renderCars();
+}
+
+function getTodayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function clearForm() {
+  if (!confirm('Cari formanın bütün məlumatlarını silmək istəyirsiniz?')) return;
+  document.querySelectorAll('#form-' + currentType + ' input').forEach(i => {
+    if (i.type === 'number') i.value = i.defaultValue || '1';
+    else i.value = '';
+  });
+  if (currentType === 'list') {
+    cars = [{ brand:'', plate:'', driver:'', license:'' }];
+    renderCars();
+  }
+  saveData();
+}
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+function fmtDateAzPretty(dateStr) {
+  if (!dateStr) return '«___» ____ ____-ci il';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '«___» ____ ____-ci il';
+  const day = d.getDate();
+  return `«${day < 10 ? '0' + day : day} ${AZ_MONTHS[d.getMonth()]}» ${d.getFullYear()}-ci il`;
+}
+function fmtDateAzShort(dateStr) {
+  if (!dateStr) return '___';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '___';
+  return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]} ${d.getFullYear()}-ci il`;
+}
+function fmtDateDot(dateStr) {
+  if (!dateStr) return '___';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '___';
+  const pad = n => n < 10 ? '0'+n : ''+n;
+  return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
+}
+function getCompany() { return COMPANIES[document.getElementById('company').value] || COMPANIES.ez; }
+function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+// Format "Məktub № 3168" or "Məktub № 3168 (SX...AZ № li sorğuya rəsmi cavab)"
+function formatLetterNum(num, sorgu) {
+  const n = escapeHtml(num || '___');
+  const s = (sorgu || '').trim();
+  if (!s) return `Məktub № ${n}`;
+  return `Məktub № ${n} (${escapeHtml(s)} № li sorğuya rəsmi cavab)`;
+}
+
+// ════════════════════════════════════════════
+// HEADER
+// ════════════════════════════════════════════
+function headerHtml(company) {
+  if (company.logo === 'europcar') {
+    return `
+      <div class="header-ez">
+        <div class="logo-europcar"><img src="${EUROPCAR_LOGO}" alt="Europcar"></div>
+        <div class="header-ez-info">
+          <div>
+            ${escapeHtml(company.address)}<br>
+            Tel: ${escapeHtml(company.phone)}<br>
+            ${escapeHtml(company.email)}
+          </div>
+          <div>
+            ${escapeHtml(company.fullName)}<br>
+            VOEN: ${escapeHtml(company.voen)}
+          </div>
+        </div>
+      </div>`;
+  } else {
+    return `
+      <div class="header-bubago">
+        <div class="header-bubago-line">${escapeHtml(company.fullName)}</div>
+        <div class="header-bubago-line">VOEN: ${escapeHtml(company.voen)}</div>
+        <div class="header-bubago-info">
+          Hüquqi ünvan: ${escapeHtml(company.address)}<br>
+          Tel: ${escapeHtml(company.phone)}
+        </div>
+      </div>`;
+  }
+}
+
+// ════════════════════════════════════════════
+// LETTER BUILDERS
+// ════════════════════════════════════════════
+function buildSingleLetter() {
+  const company = getCompany();
+  const num = getVal('s_num') || '___';
+  const sorgu = getVal('s_sorgu');
+  const date = getTodayStr();  // всегда сегодня
+  const recipientKey = getVal('s_recipient');
+  const recipient = recipientKey === 'custom'
+    ? (getVal('s_custom') || '___')
+    : (RECIPIENTS[recipientKey] || RECIPIENTS.bas);
+  const brand = getVal('s_brand') || '___';
+  const plate = getVal('s_plate') || '___';
+  const dateFrom = getVal('s_from');
+  const dateTo = getVal('s_to');
+  const driver = getVal('s_driver') || '___';
+  const license = getVal('s_license') || '___';
+  const director = company.director;  // авто из компании
+
+  const bodyText = `Nəzərinizə çatdırırıq ki, ${company.fullName}-nin mülkiyyətində və ya istifadəsində olan ${escapeHtml(brand)} markalı ${escapeHtml(plate)} dövlət qeydiyyat nişanlı nəqliyyat vasitəsi ${fmtDateAzShort(dateFrom)} tarixindən ${fmtDateAzShort(dateTo)} tarixədək aşağıda qeyd olunan şəxsin istifədəsində olduğunu nəzərə alaraq həmin şəxsin adına protokollar üzrə qərar çıxarılmasını xahiş edirik.`;
+
+  return `
+    <div class="letter">
+      ${headerHtml(company)}
+      <div class="letter-meta">
+        <span>Bakı şəhəri</span>
+        <span>${fmtDateAzPretty(date)}</span>
+      </div>
+      <div class="recipient">${escapeHtml(recipient)}</div>
+      <div class="letter-num">${formatLetterNum(num, sorgu)}</div>
+      <div class="body-text">${bodyText}</div>
+      <div class="driver-block">
+        Adı, soyadı: <b>${escapeHtml(driver)}</b><br>
+        Sürücülük vəsiqəsi: <b>${escapeHtml(license)}</b>
+      </div>
+      <div class="signature">
+        <div>Direktor: ${escapeHtml(director)}</div>
+        <div>Möhür və imza:</div>
+      </div>
+    </div>`;
+}
+
+function buildListLetter() {
+  const company = getCompany();
+  const num = getVal('l_num') || '___';
+  const sorgu = getVal('l_sorgu');
+  const date = getTodayStr();
+  const city = getVal('l_city') || 'Bakı';
+  const director = company.director;  // авто из компании
+
+  const activeCars = cars.filter(c => c.brand || c.plate || c.driver);
+  if (activeCars.length === 0) {
+    return '<div class="letter"><p style="text-align:center;color:#999;padding:50px">Maşın siyahısı boşdur</p></div>';
+  }
+
+  const hasDrivers = activeCars.some(c => c.driver);
+
+  let tableRows = '';
+  activeCars.forEach((c, i) => {
+    if (hasDrivers) {
+      tableRows += `
+        <tr>
+          <td class="center">${i+1}</td>
+          <td>${escapeHtml(c.brand || '—')}</td>
+          <td class="center">${escapeHtml(c.plate || '—')}</td>
+          <td>${escapeHtml(c.driver || '—')}</td>
+          <td class="center">${escapeHtml(c.license || '—')}</td>
+        </tr>`;
+    } else {
+      tableRows += `
+        <tr>
+          <td class="center">${i+1}</td>
+          <td>${escapeHtml(c.brand || '—')}</td>
+          <td class="center">${escapeHtml(c.plate || '—')}</td>
+        </tr>`;
+    }
+  });
+
+  const tableHead = hasDrivers
+    ? `<tr><th style="width:40px">№</th><th>Marka/Model</th><th style="width:130px">Dövlət nişanı</th><th>Sürücü A.S.A.</th><th style="width:120px">Sür. vəsiqəsi</th></tr>`
+    : `<tr><th style="width:40px">№</th><th>Marka/Model</th><th style="width:160px">Dövlət nişanı</th></tr>`;
+
+  const bodyText = `Nəzərinizə çatdırırıq ki, aşağıda qeyd olunan şəxslər ${company.fullName}-nin nəqliyyat vasitələrini idarə etmir. Xahiş edirik onların adlarını sistemdən silməyinizi.`;
+
+  return `
+    <div class="letter">
+      ${headerHtml(company)}
+      <div class="letter-meta">
+        <span>${escapeHtml(city)} şəhəri</span>
+        <span>${fmtDateAzPretty(date)}</span>
+      </div>
+      <div class="recipient">${RECIPIENTS.bas}</div>
+      <div class="letter-num">${formatLetterNum(num, sorgu)}</div>
+      <div class="body-text">${bodyText}</div>
+      <table class="cars-table">
+        <thead>${tableHead}</thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+      <div class="signature">
+        <div>Direktor: <b>${escapeHtml(director)}</b></div>
+        <div>Möhür və imza: ____________</div>
+      </div>
+    </div>`;
+}
+
+function buildEtibarname(opts) {
+  // opts: { company, num, sorgu, dateFrom, dateTo, brand, plate, driver, license, person }
+  const titleNum = escapeHtml(opts.num || '___');
+  const sorgu = (opts.sorgu || '').trim();
+  const titleHtml = sorgu
+    ? `Etibarnamə № ${titleNum} (${escapeHtml(sorgu)} № li sorğuya rəsmi cavab)`
+    : `Etibarnamə № ${titleNum}`;
+  return `
+    <div class="letter">
+      ${headerHtml(opts.company)}
+      <div class="etibar-title">${titleHtml}</div>
+      <div class="etibar-org">Təşkilat: ${opts.company.fullName}</div>
+      <table class="etibar-table">
+        <thead><tr><th>Avtomobilin markası</th><th>Dövlət qeydiyyat nişanı</th></tr></thead>
+        <tbody><tr><td>${escapeHtml(opts.brand)}</td><td>${escapeHtml(opts.plate)}</td></tr></tbody>
+      </table>
+      <table class="etibar-table">
+        <thead><tr><th>Sürücü</th><th>Sürücülük vəsiqəsinin seriyası</th></tr></thead>
+        <tbody><tr><td>${escapeHtml(opts.driver)}</td><td>${escapeHtml(opts.license)}</td></tr></tbody>
+      </table>
+      <div class="etibar-text">
+        Avtomobil texniki baxışdan keçib və yuxarıda qeyd olunmuş şəxslərə Azərbaycan Respublikası ərazisində idarə etmək üçün verilir.
+      </div>
+      <div class="etibar-dates">
+        <span>Verilmə tarixi: ${fmtDateDot(opts.dateFrom)}</span>
+        <span>Etibarlıq tarixi: ${fmtDateDot(opts.dateTo)}</span>
+      </div>
+      <div class="signature">
+        <div>Səlahiyyətli şəxs: ${escapeHtml(opts.person)}</div>
+        <div>Möhür və imza:</div>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════
+// GENERATE
+// ════════════════════════════════════════════
+function generate() {
+  const company = getCompany();
+  let html = '', title = '';
+
+  if (currentType === 'single') {
+    title = 'Məktub + Etibarnamə';
+    html = buildSingleLetter();
+    // Page 2: etibarname — dates from the letter
+    const etibarOpts = {
+      company: company,
+      num: getVal('s_etibar_num') || '___',
+      sorgu: getVal('s_sorgu'),
+      dateFrom: getVal('s_from'),
+      dateTo: getVal('s_to'),
+      brand: getVal('s_brand') || '___',
+      plate: getVal('s_plate') || '___',
+      driver: getVal('s_driver') || '___',
+      license: getVal('s_license') || '___',
+      person: company.etibarPerson
+    };
+    html += '<div class="page-break"></div>' + buildEtibarname(etibarOpts);
+  } else if (currentType === 'list') {
+    title = 'Siyahı məktubu';
+    html = buildListLetter();
+  } else if (currentType === 'etibar') {
+    title = 'Etibarnamə';
+    html = buildEtibarname({
+      company: company,
+      num: getVal('e_num') || '___',
+      sorgu: getVal('e_sorgu'),
+      dateFrom: getVal('e_from'),
+      dateTo: getVal('e_to'),
+      brand: getVal('e_brand') || '___',
+      plate: getVal('e_plate') || '___',
+      driver: getVal('e_driver') || '___',
+      license: getVal('e_license') || '___',
+      person: company.etibarPerson
+    });
+  }
+
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('letterContent').innerHTML = html;
+  document.getElementById('modal').classList.add('active');
+
+  // Авто-инкремент номера письма (последняя цифровая часть +1)
+  incrementLetterNum(currentType);
+}
+
+function incrementLetterNum(type) {
+  let inputId = null;
+  if (type === 'single') inputId = 's_num';
+  else if (type === 'list') inputId = 'l_num';
+  else if (type === 'etibar') inputId = 'e_num';
+  if (!inputId) return;
+
+  const el = document.getElementById(inputId);
+  if (!el || !el.value) return;
+
+  // Находим последнюю числовую группу и увеличиваем
+  const match = el.value.match(/^(.*?)(\d+)(\D*)$/);
+  if (!match) return;
+
+  const prefix = match[1];
+  const num = parseInt(match[2], 10);
+  const suffix = match[3];
+  const padLen = match[2].length;
+  const next = String(num + 1).padStart(padLen, '0');
+
+  el.value = prefix + next + suffix;
+  saveData();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+function copyText() {
+  const text = document.getElementById('letterContent').innerText;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => showToast('Mətn kopyalandı ✓'),
+      () => showToast('Kopyalanmadı')
+    );
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('Mətn kopyalandı ✓'); }
+    catch(e) { showToast('Kopyalanmadı'); }
+    document.body.removeChild(ta);
+  }
+}
+
+function savePDF() {
+  const el = document.getElementById('letterContent');
+  if (!el || !el.innerHTML.trim()) {
+    showToast('Məktub yoxdur');
+    return;
+  }
+
+  // Имя файла
+  const today = new Date().toISOString().split('T')[0];
+  let num = '', prefix = 'Məktub';
+  if (currentType === 'single') { num = getVal('s_num'); prefix = 'Məktub'; }
+  else if (currentType === 'list') { num = getVal('l_num'); prefix = 'Siyahı'; }
+  else if (currentType === 'etibar') { num = getVal('e_num'); prefix = 'Etibarnamə'; }
+  const docTitle = prefix + '_' + (num || 'sənəd') + '_' + today;
+
+  // Собираем все CSS стили из текущей страницы
+  let styles = '';
+  for (const sheet of document.styleSheets) {
+    try {
+      for (const rule of sheet.cssRules) {
+        styles += rule.cssText + '\n';
+      }
+    } catch(e) {}
+  }
+
+  // Открываем новую вкладку с письмом
+  const win = window.open('', '_blank');
+  if (!win) {
+    showToast('Brauzer pop-up əngəlləyir. İzin ver və yenidən cəhd et.');
+    return;
+  }
+
+  win.document.write(`<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>${docTitle}</title>
+<style>${styles}
+@media screen {
+  body { background:#f0f2f5; padding:10px; }
+  .letter { box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 10px auto; max-width: 800px; }
+  .print-bar {
+    position: sticky; top: 0; background: #2c5530; color: #fff;
+    padding: 12px; text-align: center; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .print-bar button {
+    background: #fff; color: #2c5530; border: none;
+    padding: 10px 18px; border-radius: 8px;
+    font-weight: bold; font-size: 14px; cursor: pointer;
+    margin: 0 4px;
+  }
+  .print-bar small { display:block; margin-top:6px; opacity:0.85; font-size: 11px; }
+}
+@media print {
+  .print-bar { display: none !important; }
+  body { background: #fff; padding: 0; margin: 0; }
+  .letter { box-shadow: none; padding: 20mm; max-width: 100%; }
+  .page-break { page-break-before: always; }
+  @page { size: A4; margin: 0; }
+}
+</style>
+</head><body>
+<div class="print-bar">
+  <button onclick="window.print()">🖨️ PDF kimi saxla / Çap et</button>
+  <small>📱 Telefon: bu düyməyə bas → "Save as PDF" və ya "Save to Google Drive" seç</small>
+</div>
+${el.innerHTML}
+</body></html>`);
+  win.document.close();
+  win.document.title = docTitle;
+
+  // На некоторых браузерах надо подождать пока загрузится, потом авто-открыть диалог
+  setTimeout(() => {
+    try { win.focus(); } catch(e) {}
+  }, 500);
+
+  showToast('Yeni pəncərədə açıldı ✓');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+loadData();
+</script>
+
+</body>
+</html>
